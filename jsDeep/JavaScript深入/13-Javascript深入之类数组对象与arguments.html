@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+/**
+    类数组: 拥有一个 length 属性和若干索引属性的对象
+*/
+// 例子
+var array = ['name','age','sex'];
+var arrayLink = {
+    0: 'name',
+    1: 'age',
+    2: 'sex',
+    length: 3
+}
+// 从读写、获取长度、遍历三个方面看看这两个对象
+// 1.读写
+console.log(array[0]);// name
+console.log(arrayLink[0]);// name
+array[0] = 'new name';
+arrayLink[0] = 'new name';
+
+// 2.长度
+console.log(arrayLink.length);// 3
+console.log(array.length);// 3
+
+// 3.遍历
+for(let i = 0; i < array.length; i++) {
+    console.log(array[i])
+}
+for(let i = 0; i < arrayLink.length; i++) {
+    console.log(arrayLink[i])
+}
+// 跟数组很像,但是不能直接使用数组的方法
+/**
+    调用数组的方法
+*/
+// 可以通过 Fuction.call 间接调用
+var arr1 = Array.prototype.join.call(arrayLink, '&');
+console.log(arr1);// new name&age&sex {String}
+// slice可以做到类数组转数组
+var arr2 = Array.prototype.slice.call(arrayLink, 0);
+arr2.push('456')
+console.log(arr2);//  ["new name", "age", "sex", "456"]
+// 转换成数组
+var arr3 = Array.prototype.map.call(arrayLink, function(item) {
+    return item.toUpperCase()
+});
+console.log(arr3);// ["NEW NAME", "AGE", "SEX"]
+
+// 类数组转对象
+Array.prototype.slice.call(arrayLink);
+// es6方法
+var arr4 = Array.from(arrayLink);
+console.log('arr4',arr4);
+// apply方法
+var arr5 = Array.prototype.concat.apply([], arrayLink);
+console.log('arr5',arr5);
+
+/**
+    arguments 对象
+        Arguments 对象只定义在函数体中，包括了函数的参数和其他属性。
+        在函数体中，arguments 指代该函数的 Arguments 对象。
+        不要乱用 arguments
+*/
+function foo(name, age, sex) {
+    console.log(arguments);
+}
+foo('sss', 'age', 'sex');
+/**
+    0:"sss"
+    1:"age"
+    2:"sex"
+    callee:ƒ foo(name, age, sex)
+    length:3
+    Symbol(Symbol.iterator):ƒ values()
+    __proto__:Object​
+*/
+/*
+    length属性
+        Arguments对象的length属性，表示实参的长度
+*/
+function foo1(name, age, sex) {
+    console.log(`实参的长度为${arguments.length}`);// 3
+}
+console.log(`形参的长度为${foo.length}`)// 1
+foo1('sss');
+
+/**
+    callee属性
+        Arguments 对象的 callee 属性，通过它可以调用函数自身
+    废弃的 arguments.caller 属性原先用在函数执行的时候调用自身。本属性已被移除且不再有用。|| MDN
+*/
+var  data = [];
+for(let i = 0; i < 3; i++) {
+    (data[i] = function () {
+        console.log(arguments.callee.i);
+    }).i = i;
+    /**
+        函数也是一种对象,可以通过这种方式给函数添加一个自定义的属性
+            例子:
+            var fun1 = function() {};
+            fun1.test = 'test';
+            console.log(fun1.test);// test
+
+        这个解决方式就是给 data[i] 这个函数添加一个自定义属性，这个属性值就是正确的 i 值
+    */
+}
+data[0]();// 0
+data[1]();// 1
+data[2]();// 2
+
+/**
+    arguments 和对应参数的绑定
+*/
+function foo2(name, age, sex, habit) {
+    console.log(name, arguments[0]);// name name
+    // 改变形参
+    name = 'new name';
+    console.log(name, arguments[0]);// new name new name
+    // 改变 arguments
+    arguments[1] = 'new age';
+    console.log(age, arguments[1]);// new age new age
+    // 测试未传入的是否会绑定
+    console.log(sex);// undefined
+    sex = 'new sex';
+    console.log(sex, arguments[2]);// new sex undefined
+
+    arguments[3] = 'new habit';
+    console.log(habit, arguments[3]);// undefined "new habit"
+}
+foo2('name', 'age');
+// 传入的参数，实参和 arguments 的值会共享，当没有传入时，实参与 arguments 值不会共享
+// 在严格模式下，实参和 arguments 是不会共享的
+
+/**
+    传递参数
+        将参数从一个函数传入另一个函数
+*/
+// 使用 apply 将 foo3 的参数传递给 bar
+function foo3() {
+    bar.apply(this, arguments);
+}
+function bar(a, b, c) {
+    console.log(a, b, c);// 1 2 3
+}
+foo3(1, 2, 3);
+
+// 使用es6 ... 运算符,可以轻松的转换成 数组
+function fuc(...arguments) {
+    console.log(arguments);// [7, 8, 9]
+}
+fuc(7,8,9);
+
+/**
+    在箭头函数中,没有 arguments 属性
+*/
+</script>

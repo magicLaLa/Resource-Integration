@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+// 1.原型链继承
+function Parent() {
+    this.name = 'pro'
+}
+Parent.prototype.getName = function() {
+    console.log(this.name);
+}
+function Child() {}
+Child.prototype = new Parent();
+Child.prototype.constructor = Child;
+var child = new Child();
+child.getName();// pro
+// 引用类型的属性被所有实例共享
+function Parent2() {
+    this.names = {
+        o: '1111'
+    }
+}
+function Child2() {}
+Child2.prototype = new Parent2();
+var child2 = new Child2();
+console.log(child2.names);// {o: "1111"}
+child2.names.o = '22222';
+console.log(child2.names);// {o: "2222"}
+var child3 = new Child2();
+console.log(child3.names);// {o: "2222"}
+// 在创建 Child 的实例时，不能向Parent传参
+
+// 2.借用构造函数(经典继承)
+function Ps() {
+    this.names = ['111', '222']
+}
+function Ch() {
+    Ps.call(this)
+}
+var ch = new Ch()
+ch.names.push('yuyu');
+console.log(ch.names);//  ["111", "222", "yuyu"]
+var ch1 = new Ch();
+console.log(ch1.names);//  ["111", "222"]
+// 优点:1.避免了引用类型的属性被所有实例共享 2.可以在 Child 中向 Parent 传参
+// 缺点: 方法都在构造函数中定义，每次创建实例都会创建一遍方法
+
+// 3.组合继承
+function Par(name) {
+    this.name = name;
+    this.colors = ['red', 'green'];
+}
+Par.prototype.getName = function () {
+    console.log(this.name)
+}
+function Chi(name, age) {
+    Par.call(this, name);
+    this.age = age
+}
+Chi.prototype = new Par();
+Chi.prototype.constructor = Chi;
+var chi1 = new Chi('ken','18');
+chi1.colors.push('black');
+console.log(chi1.colors);// ["red", "green", "black"]
+console.log(chi1.name);// ken
+console.log(chi1.age);// 18
+
+var chi2 = new Chi('jjj','20');
+console.log(chi2.colors);// ["red", "green"]
+console.log(chi2.name);// jjj
+console.log(chi2.age);// 20
+// 优点：融合原型链继承和构造函数的优点，是 JavaScript 中最常用的继承模式
+
+// 4.原型继承
+function creatObj(o) {
+    function F(){};
+    F.prototype = o;
+    return new F()
+}
+// 就是 ES5 Object.create 的模拟实现，将传入的对象作为创建的对象的原型
+// 缺点：包含引用类型的属性值始终都会共享相应的值，这点跟原型链继承一样
+var ppp = {
+    name: 'kkk',
+    friends: ['ddd','bbb']
+}
+var p1 = creatObj(ppp);
+var p2 = creatObj(ppp);
+p1.name = 'p1';
+console.log(p2.name);// kkk
+p1.friends.push('lkj');
+console.log(p2.friends);// ["ddd", "bbb", "lkj"]
+/**
+    修改person1.name的值，person2.name的值并未发生改变，
+    并不是因为person1和person2有独立的 name 值，
+    而是因为person1.name = 'person1'，给person1添加了 name 值，
+    并非修改了原型上的 name 值
+*/
+
+// 5.寄生式继承
+function creatObj1 (o) {
+    var clone = Object.create(o);
+    clone.sayName = function () {
+        console.log('hi')
+    }
+    return clone
+}
+// 缺点：跟借用构造函数模式一样，每次创建对象都会创建一遍方法
+
+// 6.寄生组合式继承
+function Par2(name) {
+    this.name = name;
+    this.colors = ['red', 'blue', 'green']
+} 
+Par2.prototype.getName = function () {
+    console.log(this.name)
+}
+function Chi2(name, age) {
+    Par2.call(this, name);
+    this.age = age;
+}
+// 关键第三部
+var F = function () {};
+F.prototype = Par2.prototype;
+Chi2.prototype = new F();
+var chi2 = new Chi2('klm', '100')
+chi2.getName();// klm
+console.log(chi2.colors);// ["red", "blue", "green"]
+
+// 把上面这个封装一下
+function object(o) {
+    function F() {};
+    F.prototype = o;
+    return new F()
+}
+function prototype(child, parent) {
+    var prototype = Object(parent.prototype);
+    prototype.constructor = child;
+    child.prototype = prototype;
+}
+// 使用的时候
+// prototype(Child, Parent);
+
+/**
+    请实现函数Person,功能如下
+    var person=new Person('jim');
+    person.setAge(21).setPosition('developer').sayHi();
+    //输出'Hello,my name is jim,21 years old, I am a developer'
+*/
+function Person(name) {
+    this.name = name;
+    this.setAge = function(age) {
+        this.age = age
+        return this
+    };
+    this.setPosition = function(pos) {
+        this.position = pos
+        return this
+    };
+    this.sayHi = function() {
+        console.log(`Hello,my name is ${this.name},${this.age} years old, I am a ${this.position}`);
+    }
+}
+//  通过 return this 实现连缀, 也可以写在 prototype 上
+// es6 的写法
+class Person2 {
+    constructor(name) {
+        this.name = name
+    }
+    setAge(age) {
+        this.age = age;
+        return this
+    }
+    setPosition(pos) {
+        this.position = pos;
+        return this
+    }
+    sayHi() {
+        console.log(`Hello,my name is ${this.name},${this.age} years old, I am a ${this.position}`)
+    }
+}
+let person2 = new Person2('jim');
+person2.setAge(21).setPosition('developer').sayHi();
+</script>

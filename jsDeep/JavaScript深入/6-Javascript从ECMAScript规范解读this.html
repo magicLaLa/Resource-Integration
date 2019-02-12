@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+// 这个页面的参考 https://github.com/mqyqingfeng/Blog/issues/7
+// 'use strict'
+var value = 1;
+var foo = {
+  value: 2,
+  bar: function () {
+    return this.value
+  }
+}
+//示例1
+console.log(foo.bar());// 2
+//示例2
+console.log((foo.bar)());// 2
+//示例3
+// this 为 undefined，非严格模式下，this 的值为 undefined 的时候，其值会被隐式转换为全局对象
+console.log((foo.bar = foo.bar)());// 1
+//示例4
+console.log((false || foo.bar)());// 1
+//示例5
+console.log((foo.bar, foo.bar)());// 1
+
+function Foo() {
+  getNmae = function () {
+    console.log(10)
+  }
+  return this// 指向 window
+}
+function getNmae() {
+  console.log(11)
+}
+// Foo里面的 getName 覆盖了 外层的 getName
+// Foo()函数里面也是个一个函数表达式，getName也是指向的全局
+Foo().getNmae()// 10
+</script>

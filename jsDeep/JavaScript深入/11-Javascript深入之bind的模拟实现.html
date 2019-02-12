@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+/**
+    bind:
+        会创建一个新函数。当这个新函数被调用时，bind() 的第一个参数将作为它运行时的 this，
+        之后的一序列参数将会在传递的实参前传入作为它的参数。(来自于 MDN )
+
+    两个特点:
+        1.返回一个函数
+        2.可以传入参数
+*/
+var foo = {
+    val: 1
+}
+function bar() {
+    console.log(this.val)
+}
+var result = bar.bind(foo);
+result()// 1
+
+// 返回函数的模拟实现
+// 通过 call 或者 apply 来修改 this 的指向
+Function.prototype.bind2 = function(context) {
+    var self = this;
+    return function() {
+        self.call(context)
+    }
+}
+// console.log(bar.bind2(foo))
+var res2 = bar.bind2(foo)
+res2()
+
+// 模拟传参数
+Function.prototype.bind3 = function(context) {
+    var self = this;
+    // 获取bind3函数从第二个参数到最后一个参数
+    var agrs = Array.prototype.slice.call(arguments, 1);
+
+    return function() {
+        // 这个时候的 arguments 是指 bind 返回的函数传入的参数
+        var bindArgs = Array.prototype.slice.call(arguments);
+        return self.apply(context, agrs.concat(bindArgs));
+    }
+}
+function bar2(name, age){
+    this.habit = 'shoppping'
+    console.log(this.val);
+    console.log(name);
+    console.log(age);
+}
+var res3 = bar2.bind3(foo, 'kver')
+res3('18');
+/*
+    1,
+    kver,
+    18
+*/
+
+/**
+    构造函数效果的模拟实现
+        bind 的一个特点:
+        一个绑定函数也能使用new操作符创建对象：这种行为就像把原函数当成构造器。
+        提供的 this 值被忽略，同时调用时的参数被提供给模拟函数。
+*/
+Function.prototype.bind4 = function (context){
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    var fun1 = function () {
+        var bindArgs = Array.prototype.slice.call(arguments);
+        // 当作为构造函数时，this 指向实例，此时结果为 true，将绑定函数的 this 指向该实例，
+        //   可以让实例获得来自绑定函数的值
+        // 以上面的是 demo 为例，如果改成 `this instanceof fun1 ? null : context`，实例只是一个空对象，将 null 改成 this ，实例会具有 habit 属性
+        // 当作为普通函数时，this 指向 window，此时结果为 false，将绑定函数的 this 指向 context
+        return self.apply(this instanceof fun1 ? this : context, args.concat(bindArgs))
+    }
+    // 修改返回函数的 prototype 为绑定函数的 prototype，实例就可以继承绑定函数的原型中的值
+    fun1.prototype = self.prototype;
+    return fun1;
+}
+bar2.prototype.friend = 'kkkk';
+var bindFoo = bar2.bind4(foo, 'dasiy')
+var obj = new bindFoo('18')
+console.log(obj.habit)
+console.log(obj.friend)
+
+
+// 最终代码 优化过后
+Function.prototype.bind5 = function (context) {
+    if (typeof this !== "function") {
+        throw new Error("is not function")
+    }
+
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    // 空函数做中转
+    var fNOP = function () {};
+
+    var fun1 = function () {
+        var bindArgs = Array.prototype.slice.call(arguments);
+        return self.apply(this instanceof fNOP ? this: context, args.concat(bindArgs));
+    }
+
+    fNOP.prototype = self.prototype;
+    fun1.prototype = new fNOP();
+    return fun1;
+}
+var bindFoo = bar2.bind5(foo, 'DDDD')
+var obj = new bindFoo('15151555')
+console.log(obj.habit)
+console.log(obj.friend)
+</script>

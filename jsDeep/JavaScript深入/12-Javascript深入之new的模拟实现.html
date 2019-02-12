@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+/**
+    new 关键字 
+    可以创建一个用户自定义的对象类型的实例
+    可以透过构造函数创建实例对象,实例对象可以访问构造函数中的属性,也可以访问 prototype 中的属性
+    结果就是 创建一个新对象
+*/
+// 模拟实现效果预览
+/**
+    function Otaku() {
+        .......
+    }
+    使用 new
+    var person = new Otaku();
+    使用 objectFactory(Otaku, ....)
+*/
+function objectFactory() {
+    // var arr = new Array();
+    var obj = new Object();
+    Constructor =  [].shift.call(arguments);
+    console.log(Constructor);
+    var _F = function (){};
+    _F.prototype = Constructor.prototype;
+    obj.__proto__ = new _F();
+    var ret = Constructor.apply(obj, arguments);
+    // 最后返回一个对象
+    return typeof ret === 'object' ? ret : obj
+}
+
+function Otaku(name) {
+    this.sss = 'ssssss';
+    this.age = '18';
+
+    // return {
+    //     name: name,
+    //     habit: 'Games'
+    // }
+}
+Otaku.prototype.strength = '80'
+Otaku.prototype.sayNmae = function (){
+    console.log('sayHello')
+}
+var person = objectFactory(Otaku, 'jjj');
+console.log(person);
+console.log(person.strength)
+person.__proto__.strength = '8520'
+person.sayNmae();
+console.log(Otaku.prototype.strength)
+console.log(person.__proto__.strength)
+</script>

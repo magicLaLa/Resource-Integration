@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+/**
+    call() 方法: 在使用一个指定的 this 值和若干个指定的参数值的前提下调用某个函数或方法。
+*/
+var a = {
+    val: 1
+}
+function foo() {
+    console.log(this.val)
+}
+foo.call(a);// 1
+// call 改变了 this 的指向,指向了 a
+// foo 函数执行
+
+/**
+    模拟实现
+*/
+// 第一步 第一版
+// Function.prototype.call2 = function(context) {
+//     // 首先获取调用call的函数,用 this 可以获取
+//     context.fn = this;
+//     context.fn()
+//     delete context.fn
+// }
+// var fo1 = {
+//     val:10
+// }
+// function bar() {
+//     console.log(this.val)
+// }
+// bar.call2(fo1);// 10
+
+// 第二部 传参
+// 从 arguments 里去 第二个到最后一个
+// Function.prototype.call2 = function(context) {
+//     // 首先获取调用call的函数,用 this 可以获取
+//     // bar 是 Function 的实例对象.所以方法的this 是返回实例bar
+//     context.fn = this;
+//     var args = [];
+//     for(var i = 1; i < arguments.length; i++) {
+//         args.push('arguments[' + i + ']');
+//     }
+//     eval('context.fn(' + args + ')');
+//     delete context.fn
+// }
+// var fo2 = {
+//     val: 11
+// }
+// function bar(name, age) {
+//     console.log(name);// lili
+//     console.log(age);// 12
+//     console.log(this.val);// 11
+// }
+// bar.call(fo2, 'lili', 12);
+
+// 第三步
+// 1.this 参数可以传 null，当为 null 的时候，视为指向 window
+// 2.函数是可以有返回值的
+Function.prototype.call2 = function(context) {
+    var result = '';
+    console.log(context)
+    context = context || window;
+    console.log(context)
+    // 首先获取调用call的函数,用 this 可以获取
+    context.fn = this;
+    console.log(context.fn)
+    var args = [];
+    for(var i = 1; i < arguments.length; i++) {
+        args.push('arguments[' + i + ']');
+    }
+    result = eval('context.fn(' + args + ')');
+    console.log(result)
+    delete context.fn
+    return result
+}
+var val = 80;
+var obj = {
+    val: 8080
+}
+function bar(name, age) {
+    console.log('***', this.val)
+    return {
+        val: this.val,
+        age: age,
+        name: name
+    }
+}
+// bar.call2(null);// 80
+console.log(bar.call2(obj, 'lalal', 50));
+// 输出: 8080 {val: 8080, age: 50, name: "lalal"}
+
+// es6写法
+Function.prototype.call3 = function (context, ...args) {
+    context = context || window
+    context.__fn__ = this
+    let result = context.__fn__(...args)
+    delete context.__fn__
+    return result
+}
+console.log('*/*/*/', bar.call3(obj, 'lalal', 50));
+
+/**
+    apply的模拟实现 最终代码
+    // 严格模式下
+*/
+Function.prototype.apply2 = function (context, arr) {
+    context = Object(context) || window;
+    context.fn = this;
+    var result;
+    if (!arr) {
+        result = context.fn();
+    } else {
+        if (arr instanceof Array) {
+            var args = [];
+            for(var j = 0; j < arr.length; j++) {
+                args.push('arr[' + j + ']');
+            }
+            result = eval('context.fn(' + args + ')')
+        } else {
+           throw new Error('apply() second parameters is not Array')
+        }
+    }
+    delete context.fn
+    return result
+}
+var obj2 = {
+    sss: 52
+}
+function bar2(name, age) {
+    return {
+        sss: this.sss,
+        name: name,
+        age: age
+    }
+}
+console.log(bar2.apply2(obj2,['luci', '58']))
+</script>

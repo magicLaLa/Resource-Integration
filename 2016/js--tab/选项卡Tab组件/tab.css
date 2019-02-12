@@ -1,0 +1,41 @@
+.tab {
+	width: 300px;
+}
+.tab .tab-nav {
+	height: 30px;
+}
+.tab .tab-nav li {
+	float: left;
+	cursor: pointer;
+	margin-right: 5px;
+	border-radius: 3px 3px 0 0;
+	background-color: #767676;
+}
+.tab .tab-nav li a {
+	display: block;
+	height: 30px;
+	padding:0 20px;
+	text-align: center;
+	line-height: 30px;
+	color: #fff;
+	text-decoration: none;
+}
+.tab .tab-nav li.actived {
+	background-color: #fff;
+}
+.tab .tab-nav li.actived a {
+	color: #777;
+}
+.tab .content-wrap {
+	background-color: #fff;
+	padding: 5px;
+	height: 200px;
+}
+.tab .content-wrap .content-item {
+	position:absolute;
+	height: 200px;
+	display: none;
+}
+.tab .content-wrap .current {
+	display: block;
+}

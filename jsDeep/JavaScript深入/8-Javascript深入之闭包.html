@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body></body>
+</html>
+<script>
+/*
+    理论上的闭包：是由 函数 + 函数能够访问的自由变量
+*/
+// 例子
+var a = 1;
+function aoo() {
+    console.log(a)
+}
+aoo()
+// 可以访问变量 a 但是 a 既不是 foo 函数的局部变量，也不是 aoo 函数的参数，所以 a 就是自由变量。
+// 《JavaScript权威指南》中就讲到：从技术的角度讲，所有的JavaScript函数都是闭包
+
+/*
+    实践角度上的闭包
+    ECMAScript中，闭包指的是：
+
+        从理论角度：所有的函数。因为它们都在创建的时候就将上层上下文的数据保存起来了。
+        哪怕是简单的全局变量也是如此，因为函数中访问全局变量就相当于是在访问自由变量，
+        这个时候使用最外层的作用域。
+        从实践角度：以下函数才算是闭包：
+        即使创建它的上下文已经销毁，它仍然存在（比如，内部函数从父函数中返回）
+        在代码中引用了自由变量
+*/
+
+var data = [];
+for (var i = 0; i < 3; i++) {
+    data[i] = function () {
+        console.log(i);
+    }
+}
+data[0]()
+data[1]()
+data[2]()
+// 都是3
+
+/*
+    在执行 data[0] 函数之前,全局上下文的 VO 是:
+        globalContext = {
+            VO: {
+                data: [...],
+                i: 3
+            }
+        }
+    当执行到 data[0] 函数的时候, data[0] 函数的作用域链是:
+        data[0]Context = {
+            Scope: [AO, globalContext.VO]
+        }
+    此时 data[0]Context 的 VO 没有 i 值,所以会从 globalContext.VO 里面查找, 所以是 3
+    data[1],data[2] 跟 data[0] 是一样的
+*/
+// 改成闭包
+var data2 = [];
+for(var j = 0; j < 3; j++) {
+    data2[j] = (function(j) {
+        console.log('上一层:' + j)
+        return function() {
+            console.log(j);
+        }
+    })(j)
+}
+data2[0]()// 0
+data2[1]()// 1
+data2[2]()// 2
+/*
+    在执行 data[0] 函数之前,全局上下文的 VO 是:
+        globalContext = {
+            VO: {
+                data: [...],
+                i: 3
+            }
+        }
+    当执行到 data[0] 函数的时候, data[0] 函数的作用域链跟上面的布不一样:
+        data[0]Context = {
+            Scope: [AO,匿名函数Context.AO, globalContext.VO]
+        }
+    匿名函数的上下文 AO 是:
+        AO = {
+            arguments: {
+                0: 0,
+                length: 1
+            },
+            i: 0
+        }
+    此时 data[0]Context 的 VO 没有 j 值,所以会从 匿名函数Context.VO 里面查找, 为 0,
+    所以不会从 globalContext.VO 里查找,即使 有 j值(3), 所以结果是 0
+*/
+
+// var fn = null;
+// function foo() {
+//     var a = 2;
+//     function innnerFoo() {
+//         console.log(c);
+//         console.log(a);
+//     }
+//     fn = innnerFoo
+// }
+// function bar() {
+//     var c = 100;
+//     fn()
+// }
+// foo()
+// bar()
+</script>

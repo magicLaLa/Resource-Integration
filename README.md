@@ -1,2 +1,3 @@
 # Resource-Integration
-零碎、资源等整合
+
+零碎资源整合

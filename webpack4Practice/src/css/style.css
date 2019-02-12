@@ -1,0 +1,10 @@
+body {
+  margin: 0 20px;
+  background-color: red;
+}
+
+div {
+  width: 64px;
+  height: 64px;
+  background: url('../images/arrow.png') no-repeat;
+}
