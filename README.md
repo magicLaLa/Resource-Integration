@@ -1,5 +1,5 @@
 # Resource-Integration
-##零碎资源整合
+## 零碎资源整合
 ### 目录结构
 
 ```
