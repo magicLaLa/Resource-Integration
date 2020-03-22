@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>svg 练习</title>
+</head>
+<body>
+  <!-- <svg width="200px" height="200px" version="1.1" xmlns="http://www.w3.org/2000/svg"> -->
+    <!-- <path d="M0 0 H200 V200 H0 Z" stroke="#000000" fill="none" stroke-width="2" /> -->
+    <!-- 30°的圆弧
+      1° = Math.PI / 180;    30° = 30 * Math.PI / 180;
+      1弧度 = 180 / Math.PI;
+    -->
+    <!-- <path d="M100 20 A100 20 0 0 0 60 30.71" stroke="blue" fill="none" stroke-width="2" /> -->
+    <!--参照物-->
+    <!-- <circle cx="100" cy="100" r="80" stroke="green" stroke-width="1"  fill="none"/> -->
+  <!-- </svg> -->
+</body>
+</html>
+
+<script>
+(function() {
+  class SVG {
+    // 画弧
+    static arc(config, attrs) {
+      let def = {
+        rx: 50,
+        ry: 50,
+        xAxisRotation: 0,
+        largeArcFlag: 0,
+        sweepFlag: 0,
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+      };
+      config = config || {};
+      attrs = attrs || {};
+      Object.keys(def).forEach((k) => {
+        config[k] = config[k] || def[k];
+      });
+      attrs.d = '';
+      ~function calcPath() {
+        let d = "M {{startX}},{{startY}} A {{rx}} {{ry}} {{xAxisRotation}} {{largeArcFlag}} {{sweepFlag}} {{endX}},{{endY}}";
+        attrs.d = d.replace(/{{(.+?)}}/g, (match, key) => {
+          return config[key];
+        });
+      }();
+      let path = document.createElement('path');
+      for (let i in attrs) {
+        path.setAttribute(i.replace(/[A-Z]/g, (item) => `-${item}`), attrs[i]);
+      }
+      return path;
+    }
+    // 写文字
+    static text(text, attrs) {
+      text = text || '';
+      attrs = attrs || {};
+      const t = document.createElement('text');
+      t.innerHTML = text;
+      for (let i in attrs) {
+        t.setAttribute(i.replace(/[A-Z]/g, (item) => `-${item}`), attrs[i]);
+      }
+      return t;
+    }
+
+    constructor(width, height) {
+      let s = document.createElement('svg');
+      s.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      s.setAttribute('width', width);
+      s.setAttribute('height', height);
+      s.setAttribute('viewBox', `0 0 ${width} ${height}`); // 指定一个给定的一组图形伸展以适应特定的容器元素
+      this.s = s;
+    }
+
+    appendItem(item) {
+      this.s.appendChild(item);
+      return this;
+    }
+    appendCircleArc(circle, angel, attrs) {
+      circle = circle || { cx: 100, cy: 100, r: 100 };
+      angel = angel || { start: 0, end: 90 };
+      attrs = attrs || { fill: 'none' };
+      let largeArcFlag = Number(angel > 180);
+      const { cx, cy, r } = circle;
+      const { start, end } = angel;
+      let circleArc = SVG.arc({
+        largeArcFlag,
+        rx: r,
+        ry: r,
+        startX: cx - r * Math.sin(start * Math.PI / 180),
+        startY: cy - r * Math.cos(start * Math.PI / 180),
+        endX: cx - r * Math.sin(end * Math.PI / 180),
+        endY: cy - r * Math.cos(end * Math.PI / 180),
+      }, attrs);
+      this.s.appendChild(circleArc);
+      return this;
+    }
+    appendCircleArcText(text, circle, angel, fontSize, attrs) {
+      circle = circle || { cx: 100, cy: 100, r: 100 };
+      angel = angel || { start: 0, end: 90 };
+      attrs = attrs || { fill: 'none' };
+      fontSize = fontSize || 16;
+      angel = angel.start + (angel.end - angel.start) / 2;
+      let posX = circle.cx - circle.r * Math.sin(angel * Math.PI / 180);
+      let posY = circle.cy - circle.r * Math.cos(angel * Math.PI / 180);
+      const circleArcText = SVG.text(text, {
+        x: posX,
+        y: posY,
+        fontSize,
+        transform: `rotate(-${angel} ${posX} ${posY})`,
+      });
+      for (let i in attrs) {
+        circleArcText.setAttribute(i.replace(/[A-Z]/g, (item) => `-${item}`), attrs[i]);
+      }
+      this.s.appendChild(circleArcText);
+    }
+    render() {
+      return this.s;
+    }
+    renderTo(dom) {
+      dom = dom || document.body;
+      dom.innerHTML =  this.s.outerHTML;
+      return this;
+    }
+  }
+
+  /**
+   * 处理渐变色
+  */
+  function gradientColor(len, color) {
+    color = color || [147, 112, 219];
+    let delta = 0.8 / len;
+    function colorTransfer(c, o) {
+      const bg = [255, 255, 255];
+      return `# ${c.map((t, i) => {
+        return parseInt((1 - o) * bg[i] + o * t).toString(16).join('');
+      })}`;
+    }
+    return new Array(len).join(',').split(',').map((o, i) => {
+      return colorTransfer(color, 1 - i * delta);
+    });
+  }
+
+  const s = new SVG(200, 200);
+  let circle = {
+    cx: 100,
+    cy: 100,
+    r: 50,
+  };
+  let angel = {
+    start: 0,
+    end: 30,
+  };
+  s.appendCircleArc(circle, angel, {
+    fill: 'none',
+    stroke: 'blue',
+    strokeWidth: '5',
+  });
+  s.appendCircleArcText('sf', circle, angel, 20, { stroke: 'yellow' });
+  s.renderTo(document.body);
+})();
+</script>
