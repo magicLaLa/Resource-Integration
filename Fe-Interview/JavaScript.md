@@ -153,3 +153,28 @@ function urlParam(){
   return param;
 }
 ```
+### 11.数组去重的方法（支持多维数组）
+```js
+// 解1:
+function flat(arr, target = []) {
+  arr.forEach((tiem) => {
+    if (Array.isArray(item)) {
+      flat(item, target)
+    } else {
+      target.push(item);
+    }
+  })
+}
+// 解2:
+function uniqueArr(arr) {
+  return [...new Set(arr.flat(Infinity))];
+}
+```
+### 12.返回到顶部的方法有哪些
+```js
+// 解1：利用 #，在 url 后增加 # 不会让页面刷新，并且可以回到顶部,当这个方法执行多次即有多个 # 时，页面不会有响应
+window.location.href += '#';
+// 解2：
+document.documentElement.scrollTop = 0;
+```
+<!-- 第17天 (2019.05.03) -->
