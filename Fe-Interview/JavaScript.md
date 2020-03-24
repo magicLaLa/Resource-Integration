@@ -177,4 +177,51 @@ window.location.href += '#';
 // 解2：
 document.documentElement.scrollTop = 0;
 ```
-<!-- 第17天 (2019.05.03) -->
+
+### 验证身份证号的方法
+*https://github.com/haizlin/fe-interview/issues/68*
+```js
+// 分析：身份证号码的组成：地址码6位+年份码4位+月份码2位+日期码2位+顺序码3位+校验码1位
+const reg = /^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|(10|20|30|31))\d{3}[0-9Xx]$/;
+```
+
+### 验证是否为中文
+```js
+// 使用的Unicode 编码 4e00 和 9fa5 分别表示第一个汉字和最后一个汉字的编码
+const reg = /^[\u4e00-\u9fa5]+$/;
+```
+
+### 实现一个new方法
+```js
+/**
+ * 1. 建一个新对象
+ * 2. 把新对象的原型指向构造函数的prototype
+ * 3. 把构造函数里的this指向新对象
+ * 4. 返回这个新对象
+*/
+// 1.
+function newNew(){
+  const newObj = {}
+  // 1. 创建一个新对象
+  const Con = [].shift.call(arguments)
+  // 得到构造函数
+  newObj.__proto__ = Con.prototype;
+  // 2. 把新对象的原型指向构造函数的prototype
+  const res = Con.apply(newObj, arguments)
+  // 3. 把构造函数里的this指向新对象
+  return typeof res === 'object' ? res : newObj;
+  // 4. 返回新对象
+}
+// 2.
+function _new(C, ...arg) {
+  const obj = Object.created(C.prototype);
+  const obj2 = C.apply(obj, ,arg);
+  return obj instanceof Object ? obj2 : obj;
+}
+```
+
+### 如何快速让一个数组乱序，写出来
+```js
+array.sort((a, b) => Math.random() > 0.5 ? 1 : -1);
+```
+<!-- 24 -->
