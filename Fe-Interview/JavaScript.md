@@ -224,4 +224,108 @@ function _new(C, ...arg) {
 ```js
 array.sort((a, b) => Math.random() > 0.5 ? 1 : -1);
 ```
-<!-- 24 -->
+
+### bind、call、apply的区别？并手写实现一个bind
+```js
+// call和apply都是为了解决改变this的指向。作用都是相同的，只是传参的方式不同。除了第一个参数外，call可以接收一个参数列表，apply只接受一个参数数组。 bind绑定完之后返回一个新的函数，不执行。
+Function.prototype.myCall = function (content = window) {
+  content.fn = this;
+  const args = [..arguments].sclice(1);
+  const result = content.fn(..args);
+  delete content.fn;
+  return result;
+}
+Function.prototype.myApply = function(content = window) {
+  content.fn = this;
+  let result;
+  if (arguments[1]) {
+    result = content.fn(...arguments[1]);
+  } else {
+    result = content.fn();
+  }
+  delete content.fn;
+  return result;
+
+}
+Function.prototype.myBind = function(content) {
+  if (typeof this !== 'function') {
+    throw new TypeError('Error');
+  }
+  const _this = this;
+  const args = [...arguments].slice(1);
+  return function F() {
+    if (this instanceof F) {
+      return new _this(..args, ...arguments);
+    }
+    return _this.apply(content, args.concat(...arguments));
+  }
+}
+```
+
+### 将数组分块为指定大小的较小数组
+```js
+const chunk = (arr, size) => Array.from({
+  length: Math.ceil(arr.length / size)
+}, (v, i) => arr.slice(i*size, i*size+size));
+console.log(chunk([1,2,3,4,5,6], 3))
+// [1, 2, 3]
+// [4, 5, 6]
+// 可以通过 flat 扁平数组获得原始数组
+chunk([1,2,3,4,5,6], 3).flat();
+```
+
+### 获取数组的最大值、最小值的方法
+```js
+// 1
+Math.min(...array);
+Math.max(...array);
+// 2
+arr.reduce((pre, cur) => pre = pre > cur ? prev : cur);
+// 3
+Math.max.apply(Array, arr)
+```
+
+### 判断字符串是否为回文字符串
+```js
+// 获取有效的字符串，我们利用正则去匹配字母和数字，因为忽略大小写，所以我们转成小写
+// 然后利用 split('') 把字符串分割成数组，再用数组的 reverse() 去反转，再用 join(‘’) 去拼接
+// 最后进行比较
+function isPlalindrome(str) {
+  if (str.length === 1) return true;
+  const str2 = str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  const strReverse = str2.split('').reverse().join();
+  return str === strReverse;
+}
+// 双指针
+function isPalindrome(str) {
+  let lp = 0;
+  let rp = str.length - 1;
+  while(lp <= rp) {
+    if (str[lp++] !== str[rp--]) return false;
+  }
+  return true;
+}
+```
+
+### 深度克隆对象
+```js
+function objClone(obj) {
+  let buf;
+  if (obj instanceof Array) {
+    buf = [];
+    let len = obj.length;
+    while(len--) {
+      buf[len] = objClone(obj[i]);
+    }
+    return buf;
+  } else if (obj instanceof Object) {
+    buf = {};
+    for (const k in obj) {
+      buf[k] = obj[k]
+    }
+    return buf;
+  }
+  return obj;
+}
+```
+<!-- 26 -->
