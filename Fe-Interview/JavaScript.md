@@ -264,14 +264,29 @@ Function.prototype.myBind = function(content) {
 
 ### 将数组分块为指定大小的较小数组
 ```js
+// 1
 const chunk = (arr, size) => Array.from({
   length: Math.ceil(arr.length / size)
 }, (v, i) => arr.slice(i*size, i*size+size));
-console.log(chunk([1,2,3,4,5,6], 3))
-// [1, 2, 3]
-// [4, 5, 6]
+console.log(chunk([1,2,3,4,5,6], 3)) // [[1, 2, 3], [4, 5, 6]]
 // 可以通过 flat 扁平数组获得原始数组
 chunk([1,2,3,4,5,6], 3).flat();
+// 2
+const listChunk = (list, szie = 1, cacheList = []) => {
+  const tmp = [...list];
+  if (size < 0) return cacheList;
+  while(tmp.length) {
+    cacheList.push(tmp.splice(0, size));
+  }
+  return cacheList;
+}
+```
+
+### 获取数组交集
+```js
+const intersection = (list, ...args) => list.filter(item => args.every(list => list.includes(item)));
+intersection([2, 1], [2, 3]) // [2]
+intersection([1, 2], [3, 4]) // []
 ```
 
 ### 获取数组的最大值、最小值的方法
