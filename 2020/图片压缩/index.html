@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <input type="file" id="inp">
+  <img id="image" src="" alt="">
+</body>
+</html>
+
+<script>
+;(function () {
+  this.accept = 'image/*';
+  this.quality = 1;
+  const fileDom = document.getElementById('inp');
+  fileDom.addEventListener('change', (e) => {
+    const files = e.target.files;
+    console.log(files);
+    if (files.length === 0) return;
+    const file = files[0];
+    const fileReader = new FileReader();
+    fileReader.onloadstart = () => {
+      // 如果类型不符合
+      console.log('accept', this.accept);
+      if (this.accept !== 'image/*' && !this.accept.includes(file.type.toLowerCase())) {
+        fileReader.abort();
+        console.log('格式错误: ', file.type.toLowerCase());
+      }
+    }
+    fileReader.onload = () => {
+      const base64 = fileReader.result;
+      console.log('base64', base64);
+      const canvas = document.createElement('canvas');
+      const image = document.createElement('img');
+      image.src = base64;
+      const size = file.size / 1000 / 1024;
+      console.log('size: ', size);
+      this.quality = Math.min(2/ size, 1); // 图片大小限制为2MB以内
+      console.log('quality', this.quality);
+      image.onload = () => {
+        const imageWidth = image.naturalWidth;
+        const imageHeight = image.naturalHeight;
+        canvas.width = imageWidth;
+        canvas.height = imageHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
+        const src = canvas.toDataURL('image/jpeg', this.quality);
+        console.log('src', src);
+        document.getElementById('image').src = src;
+      }
+
+    }
+    fileReader.onprogress = (e) => { console.log('progress', e) };
+    fileReader.readAsDataURL(file);
+  });
+})();
+</script>

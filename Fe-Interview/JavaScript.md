@@ -328,4 +328,89 @@ function objClone(obj) {
   return obj;
 }
 ```
-<!-- 26 -->
+
+### 使两个整数进行交换的方法
+```js
+// es6
+[a, b] = [b, a]
+// 利用运算符优先级
+b = a + 0*(a = b)
+```
+
+### 还有多少天跨年
+```js
+/**
+ * minunte: 1000 * 60
+ * hour: 1000 * 60 * 60
+ * day: 1000 * 60  * 60 * 24
+ * week: 1000 * 60 * 60 * 24 * 7
+*/
+Math.floor((new Date('2020-12-31 23:59:59:999') - new Date()) / 864e5) // 269
+```
+
+### 一个函数求出N的阶乘（即N!）
+```js
+const step = (n) => n === 1 ? n : n * step(n - 1);
+```
+
+### 一个函数找出给定数组中的最大差值
+```js
+Math.max(arr) - Math.min(arr);
+
+temp = (lsit) => list.sort((a, b) => a - b);
+temp[temp.length - 1] - temp[0];
+```
+### 写一个方法，使得sum(x)(y)和sum(x,y)返回的结果相同
+```js
+function sum(x) {
+  if (arguments[1]) {
+    const arr = [...arguments];
+    return arr.reduce((a, b) => a + b);
+  } else {
+    function add(c) {
+      x = x + c;
+      return add;
+    } 
+    add.toString = function() { return x };
+    return add;
+  }
+}
+```
+
+### 格式化金额的方法
+```js
+m.toLocaleString(); // 3,500
+```
+
+### 把数组扁平化
+```js
+// 1.
+temp.flat(Infinity);
+// 2.
+function flatDeep(arr) {
+  return arr.reduce((total, cur) =>
+    Array.isArray(cur) ? [...total, ...flatDeep(cur)] : [...total, cur],
+    []
+  )
+}
+```
+
+### 获取图片的原始宽高
+```js
+function loadImageAsync(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = url;
+    img.onload = function() {
+      resolve({
+        w: img.naturalWidth,
+        h: img.naturelHeight,
+      });
+    };
+    img.onerror = function() {
+      reject(new Error('报错啦~' + url));
+    };
+  });
+}
+```
+<!-- 61 -->
