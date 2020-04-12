@@ -428,4 +428,38 @@ function loadImageAsync(url) {
   });
 }
 ```
-<!-- 61 -->
+
+### 让(a==1 && a==2 && a==3)的值为true
+```js
+// 1 只能用 ==
+const a = { value: 0 };
+a.valueOf = function() {
+  return this.value += 1;
+}
+// 2 == / ===
+let val = 0;
+Object.definePropert(global, 'a', {
+  get () {
+    return ++val;
+  }
+})
+Reflect.defineProperty(window, 'a', {
+  get: () => ++val
+})
+```
+
+### 一个字符串重复的repeat函数
+```js
+function repeat(str, times) {
+  if (typeof String.prototype.repeat === 'function') {
+    return str.repeat(times);
+  } else {
+    const arr = [];
+    for (let i = 0; i < times; i++) {
+      arr[i] = str;
+    }
+    return arr.join('');
+  }
+}
+```
+<!-- 72 -->

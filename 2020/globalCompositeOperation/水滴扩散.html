@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水滴扩散</title>
+  <style>
+    canvas {
+      cursor: url('https://www.kkkk1000.com/images/mouse.png') 16 22, auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="400px" height="250px"></canvas>
+</body>
+</html>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext('2d');
+
+// 保存图片路径的数组
+const urlList = [
+  'https://user-gold-cdn.xitu.io/2018/8/30/1658abd14d14b88a?w=640&h=360&f=png&s=221487', // 黑白
+  'https://user-gold-cdn.xitu.io/2018/8/30/1658abd15d587ca5?w=100&h=100&f=png&s=2721', // 不规则图片
+];
+
+const loadImg = (urlList) => {
+  let index = 0;
+  let res = [];
+  // 每次给 load 函数传入一个图片路径，来加载图片
+  const load = (url) => {
+    // 如果 index 等于 urlList.length, 表示加载完成，结束 load 函数
+    if (index === urlList.length) return init();
+    const img = new Image();
+    img.src = url;
+    img.onload = next;
+    img.onerror = () => {
+      console.log(res[index] + '加载失败');
+      next();
+    }
+    function next () {
+      res[index] = img;
+      load(urlList[++index]);
+    }
+  };
+  load(urlList[index]);
+  return res;
+}
+// imgList 保存加载后的图片的数组， imgList 中保存的是真实的图片
+// loadImg 函数用来加载 urlList 中所有的图片, 并返回一个保存所有图片的数组
+const imgList = loadImg(urlList);
+// flag 用来限制 点击事件，一张图片只会产生一次效果
+let flag = false;
+
+
+function init() {
+  // 先在 canvas 上画出黑白的图片，然后再设置背景是彩色的图片
+  // 避免先显示出彩色图片，再显示出黑白的图片
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(imgList[0], 0, 0, 400, 250);
+  canvas.style.background = 'url(https://user-gold-cdn.xitu.io/2018/8/30/1658abd157ad9e8b?w=640&h=360&f=jpeg&s=44022)'; // 彩色
+  canvas.style.backgroundSize = '100% 100%';
+  // flag 是 true，鼠标点击才有水滴阔赛的效果
+  flag = true;
+  canvas.onclick = diffusion;
+}
+
+let width = 0; // 表示不规则的图片的尺寸
+let speed = 8; // 表示扩散效果的速度
+/* 根据鼠标坐标，画扩散效果 */
+function diffusion(e) {
+  if (flag) {
+    flag = false;
+    ctx.globalCompositeOperation = 'destination-out';
+    window.requestAnimationFrame(draw);
+    function draw() {
+      if (width > 1800) {
+        // 这里不一定需要是 1800 ，但必须是一个足够大的数，可以扩散出整张背景图
+        flag = true;
+        return;
+      }
+      width += speed;
+      // 获取鼠标相对于 canvas 的坐标
+      const x = e.layerX;
+      const y = e.layerY;
+      // 画出不规则形状的图片，逐渐增大图片的尺寸
+      ctx.drawImage(imgList[1], x - (width / 2), y - (width / 2), width, width);
+      window.requestAnimationFrame(draw);
+    }
+  }
+}
+</script>

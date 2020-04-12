@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刮刮卡</title>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+</body>
+</html>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const width = 400;
+const height = 250;
+canvas.style.width = width;
+canvas.style.height = height;
+
+init();
+function init () {
+  ctx.fillStyle = '#ddd';
+  ctx.fillRect(0, 0, width, height);
+  canvas.style.background = 'url("https://www.kkkk1000.com/images/bg3.jpg") no-repeat center';
+  canvas.style.backgroundSize = '100% 100%';
+  ctx.lineWidth = 35;
+  ctx.lineJoin = 'round';
+}
+
+canvas.addEventListener('mousedown', mouseDown, false);
+canvas.addEventListener('mousemove', mouseMove, false);
+canvas.addEventListener('mouseup', mouseUp, false);
+
+// 判断是否可以画线
+let isDrawing;
+// 保存开始画线时，线的起点的 X 坐标
+let startX = 0;
+// 保存开始画线时，线的起点的 Y 坐标
+let startY = 0;
+
+function mouseDown(e) {
+  isDrawing = true;
+  startX = e.layerX;
+  startY = e.layerY;
+   /* 移动端使用下面的方法 获取 startX 和 startY
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    */
+}
+function mouseMove(e) {
+  if (isDrawing) {
+    let x = e.layerX;
+    let y = e.layerY;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(x, y);
+    ctx.closePath();
+    ctx.stroke();
+    startX = x;
+    startY = y;
+  }
+}
+function mouseUp(e) {
+  isDrawing = false;
+  const data = ctx.getImageData(0, 0, width, height).data;
+  console.log('图片像素信息', data);
+  const len = data.length;
+  let k = 0;
+  // 如果一个像素是透明的（值都是0），k就+1
+  for(let i = 0; i < len - 3; i+=4) {
+    if (data[i] === 0 && data[i+1] === 0 && data[i + 2] === 0 && data[i + 3] === 0) {
+      k++;
+    }
+  }
+  // 当k > width*height*0.2 时，
+  // 也就是说有20%的面积是透明的时，就把整个canvas的背景显示出来
+  if (k > width * height * 0.2) {
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(0, 0, width, height);
+  }
+}
+</script>
