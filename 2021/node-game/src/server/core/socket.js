@@ -14,6 +14,8 @@ class Socket {
     socket.on(Constants.MSG_TYPES.JOIN_GAME, this.game.joinGame.bind(this.game, socket));
     // 断开游戏
     socket.on('disconnect', this.game.disconnect.bind(this.game, socket));
+    // 移动
+    socket.on(Constants.MSG_TYPES.INPUT, this.game.handleInput.bind(this.game, socket));
   }
 }
 

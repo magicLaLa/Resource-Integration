@@ -2,11 +2,12 @@ import { connect, play } from './networking';
 import { $ } from './utils/utils';
 import { downloadAssets } from './asset';
 import { startRendering, stopRendering } from './render'
+import { startCapturingInput, stopCapturingInput } from './input'
 import './css/bootstrap-reboot.css';
 import './css/main.css';
 
 Promise.all([
-  connect(),
+  connect(gameOver),
   downloadAssets(),
 ]).then(() => {
   // 隐藏连接服务器显示输入框及按键
@@ -27,7 +28,17 @@ Promise.all([
     play(val);
 
     startRendering();
+    startCapturingInput();
   };
 }).catch((e) => {
   console.log('client-index-err', e);
 });
+
+function gameOver(){
+  stopRendering();
+  stopCapturingInput();
+  $('#home').classList.remove('hidden');
+  $('.ranking').classList.add('hidden')
+  $('.delay').classList.add('hidden')
+  alert('你GG了，重新进入游戏吧。');
+}

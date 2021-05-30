@@ -1,6 +1,5 @@
 const Player = require('../objects/player');
 const Constants = require('../../shared/constants');
-const constants = require('../../shared/constants');
 
 class Game {
   constructor() {
@@ -20,14 +19,13 @@ class Game {
 
   update() {
     const now = Date.now();
-    // 现在的时间减去上次执行完毕的时间得到中间间隔的时间
     const dt = (now - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = dt;
 
-    // 更新玩家人物
-    Object.keys(this.players).map(playerId => {
-      const player = this.players[playerId];
-      player.update(dt);
+    // 每次游戏更新告诉玩家对象，你要更新了
+    Object.keys(this.players).map(playerID => {
+      const player = this.players[playerID]
+      player.update(dt)
     });
 
     if (this.shouldSendUpadte) {
@@ -40,6 +38,22 @@ class Game {
       this.shouldSendUpadte = false;
     } else {
       this.shouldSendUpadte = true;
+    }
+  }
+
+  handleInput(socket, item) {
+    console.log('item', item)
+    const player = this.players[socket.id];
+    if (player) {
+      let data = item.action.split('-');
+      let type = data[0];
+      let value = data[1];
+      switch(type) {
+        case 'move':
+          // 这里是为了防止前端发送1000/-1000这种数字，会导致玩家移动飞快
+          player.move[value] = typeof item.data === 'boolean' ? item.data ? 1 : -1 : 0;
+          break;
+      }
     }
   }
 
@@ -68,8 +82,6 @@ class Game {
       userName,
       x,
       y,
-      w: 20,
-      h: 40,
     });
   }
 

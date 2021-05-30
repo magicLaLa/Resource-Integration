@@ -25,7 +25,7 @@ function render() {
   // 绘制一个边界
   ctx.strokeStyle = 'black'
   ctx.lineWidth = 1;
-  // 默认边界左上角在屏幕中心，减去人物的x/y算出相对于人物的偏移
+  // 默认方框左上角在屏幕中心，减去人物的x/y算出相对于人物的偏移
   ctx.strokeRect(cnv.width / 2 - me.x, cnv.height / 2 - me.y, MAP_SIZE, MAP_SIZE);
 
   // 绘制所有的玩家

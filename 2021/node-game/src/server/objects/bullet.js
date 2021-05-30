@@ -1,4 +1,4 @@
-const Item = require('./bullet');
+const Item = require('./item');
 
 /**
  * 子弹类
