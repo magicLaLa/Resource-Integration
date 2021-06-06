@@ -1,76 +1,130 @@
-const Player = require('../objects/player');
-const Constants = require('../../shared/constants');
+
+const Constants = require("../../shared/constants");
+const Player = require("../objects/player");
+const Prop = require("../objects/prop");
 
 class Game {
   constructor() {
-    // 保存玩家的 socket 包
     this.sockets = {};
-    // 保存玩家的游戏对象信息
     this.players = {};
-    // 子弹
     this.bullets = [];
-    // 最后一次执行时间
+    this.props = [];
     this.lastUpdateTime = Date.now();
-    // 是否发送给前端数据，每两帧发送一次数据
-    this.shouldSendUpadte = false;
-    // 游戏更新
+    this.shouldSendUpdate = false;
+    this.createPropTime = 0;
     setInterval(this.update.bind(this), 1000 / 60);
   }
 
   update() {
     const now = Date.now();
     const dt = (now - this.lastUpdateTime) / 1000;
-    this.lastUpdateTime = dt;
+    this.lastUpdateTime = now;
 
-    // 每次游戏更新告诉玩家对象，你要更新了
-    Object.keys(this.players).map(playerID => {
-      const player = this.players[playerID]
-      player.update(dt)
+    this.createPropTime -= dt;
+    this.props = this.props.filter((item) => !item.isOver);
+    if (this.createPropTime <= 0 && this.props.length < 10) {
+      this.createPropTime = Constants.PROP.CREATE_TIME;
+      this.props.push(new Prop("speed"));
+    }
+
+    this.bullets = this.bullets.filter((item) => !item.isOver);
+    this.bullets.map((bullet) => {
+      bullet.update(dt);
     });
 
-    if (this.shouldSendUpadte) {
-      Object.keys(this.sockets).map(socketID => {
-        const socket = this.sockets[socketID];
-        const player = this.players[socketID];
-        // 处理游戏中的对象数据发送给前端
+    Object.keys(this.players).map((playerID) => {
+      const player = this.players[playerID];
+      const bullet = player.update(dt);
+      if (bullet) {
+        this.bullets.push(bullet);
+      }
+    });
+
+    this.collisionsBullet(Object.values(this.players), this.bullets);
+    this.collisionsProp(Object.values(this.players), this.props);
+
+    Object.keys(this.sockets).map((playerID) => {
+      const socket = this.sockets[playerID];
+      const player = this.players[playerID];
+      if (player.hp <= 0) {
+        socket.emit(Constants.MSG_TYPES.GAME_OVER);
+        this.disconnect(socket);
+      }
+    });
+
+    if (this.shouldSendUpdate) {
+      Object.keys(this.sockets).map((playerID) => {
+        const socket = this.sockets[playerID];
+        const player = this.players[playerID];
         socket.emit(Constants.MSG_TYPES.UPDATE, this.createUpdate(player));
       });
-      this.shouldSendUpadte = false;
     } else {
-      this.shouldSendUpadte = true;
+      this.shouldSendUpdate = true;
     }
   }
 
-  handleInput(socket, item) {
-    console.log('item', item)
-    const player = this.players[socket.id];
-    if (player) {
-      let data = item.action.split('-');
-      let type = data[0];
-      let value = data[1];
-      switch(type) {
-        case 'move':
-          // 这里是为了防止前端发送1000/-1000这种数字，会导致玩家移动飞快
-          player.move[value] = typeof item.data === 'boolean' ? item.data ? 1 : -1 : 0;
+  collisionsProp(players, props) {
+    for (let i = 0; i < props.length; i++) {
+      for (let j = 0; j < players.length; j++) {
+        let prop = props[i];
+        let player = players[j];
+
+        // 自己发射的子弹不能达到自己身上
+        // distanceTo是一个使用勾股定理判断物体与自己的距离，如果距离小于玩家与子弹的半径就是碰撞了
+        if (
+          player.distanceTo(prop) <=
+          Constants.PLAYER.RADUIS + Constants.PROP.RADUIS
+        ) {
+          prop.isOver = true;
+          player.pushBuff(prop);
           break;
+        }
+      }
+    }
+  }
+
+  collisionsBullet(players, bullets) {
+    for (let i = 0; i < bullets.length; i++) {
+      for (let j = 0; j < players.length; j++) {
+        let bullet = bullets[i];
+        let player = players[j];
+
+        if (
+          bullet.parentId !== player.id &&
+          player.distanceTo(bullet) <=
+            Constants.PLAYER.RADUIS + Constants.BULLET.RADUIS
+        ) {
+          bullet.isOver = true;
+          player.takeBulletDamage();
+          if (player.hp <= 0) {
+            this.players[bullet.parentId].score++;
+          }
+          break;
+        }
       }
     }
   }
 
   createUpdate(player) {
-    // 其他玩家
-    const otherPlayer = Object.values(this.players).filter(p => p !== player);
+    const otherPlayer = Object.values(this.players).filter((p) => p !== player);
+
     return {
       t: Date.now(),
-      // 自己
       me: player.serializeForUpdate(),
       others: otherPlayer,
-      // 子弹
-      bullets: this.bullets.map(bullet => bullet.serializeForUpdate()),
-    }
+      bullets: this.bullets.map((bullet) => bullet.serializeForUpdate()),
+      leaderboard: this.getLeaderboard(),
+      props: this.props.map((prop) => prop.serializeForUpdate()),
+    };
   }
 
-  // 玩家加入游戏
+  getLeaderboard() {
+    return Object.values(this.players)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+      .map((item) => ({ userName: item.userName, score: item.score }));
+  }
+
   joinGame(socket, userName) {
     this.sockets[socket.id] = socket;
 
@@ -82,13 +136,34 @@ class Game {
       userName,
       x,
       y,
+      r: Constants.PLAYER.RADUIS,
     });
   }
 
-  // 玩家断开链接
   disconnect(socket) {
     delete this.sockets[socket.id];
     delete this.players[socket.id];
+  }
+
+  handleInput(socket, item) {
+    const player = this.players[socket.id];
+    if (player) {
+      let data = item.action.split("-");
+      let type = data[0];
+      let value = data[1];
+      switch (type) {
+        case "move":
+          player.move[value] =
+            typeof item.data === "boolean" ? (item.data ? 1 : -1) : 0;
+          break;
+        case "dir":
+          player.fireMouseDir = item.data;
+          break;
+        case "bullet":
+          player.fire = item.data;
+          break;
+      }
+    }
   }
 }
 

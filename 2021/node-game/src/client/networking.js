@@ -18,10 +18,11 @@ export const connect = onGameOver => {
   connectPromise.then(() => {
     // 游戏更新
     socket.on(Constants.MSG_TYPES.UPDATE, processGameUpdate);
-
+    socket.on(Constants.MSG_TYPES.GAME_OVER, onGameOver)
     socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-    });
+      $('.disconnect').classList.remove('hidden')
+      console.log('Disconnected from server.')
+    })
   });
 }
 

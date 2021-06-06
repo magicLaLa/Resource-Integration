@@ -100,3 +100,19 @@ button:focus {
 #home .content .connect{
   margin-left: 50px;
 }
+
+.ranking{
+  position: fixed;
+  width: 300px;
+  background: #333;
+  top: 0;
+  left: 0;
+  color: white;
+  padding: 10px;
+}
+
+.ranking table{
+  border: 0;
+  border-collapse: 0;
+  width: 100%;
+}

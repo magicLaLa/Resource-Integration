@@ -1,7 +1,10 @@
+const { updateRanking } = require('./render')
+
 const gameUpdates = [];
 
 export function processGameUpdate(update) {
   gameUpdates.push(update);
+  updateRanking(update.leaderboard);
 }
 
 export function getCurrentState(){

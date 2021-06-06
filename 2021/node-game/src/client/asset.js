@@ -2,6 +2,8 @@
 const ASSET_NAMES = [
   'ball.svg',
   'aim.svg',
+  'bullet.svg',
+  'speed.svg'
 ];
 // 将下载号的图片文件保存起来供 canvas 使用
 const assets = {};

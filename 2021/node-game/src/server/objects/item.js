@@ -1,21 +1,22 @@
 class Item{
   constructor(data = {}){
-    // id
     this.id = data.id;
-    // 位置
     this.x = data.x;
     this.y = data.y;
-    // 大小
     this.w = data.w;
     this.h = data.h;
   }
 
-  // 这里是物体每帧的运行状态
   update(dt){
 
   }
 
-  // 格式化数据以方便发送数据给前端
+  distanceTo(item){
+    const dx = this.x - item.x;
+    const dy = this.y - item.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
   serializeForUpdate(){
     return {
       id: this.id,
